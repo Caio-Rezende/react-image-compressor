@@ -60,9 +60,28 @@ amplify publish
 
 7. Add policy to the bucket in order to allow usage by the identity pool
 
+8. Create a Dynamo DB in the AWS in order to store the list of ids of items for pagination
 
-8. Run the app locally.
+> It's schema can be as stated in /src/constant/item.js > ITEM_TABLE_CREATE_PARAMS
+
+9. Don't forget to add permission in the IAM for both storage S3 and DynamoDB
+
+10. Run the app locally.
 
 ```
 npm run start
+```
+
+11. Postman commands:
+
+GET item
+
+```
+curl --location --request GET 'http://localhost:3000/api/item?id=2022/09/05/13/47/466/20180828_123340.jpg'
+```
+
+LIST items
+
+```
+curl --location --request GET 'http://localhost:3000/api/list?page=2'
 ```

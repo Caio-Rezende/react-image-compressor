@@ -8,9 +8,6 @@ export async function storageUpload(filename, file) {
     return await Storage.put(filename, file, {
       contentType: file.type,
       level: "public",
-      progressCallback(progress) {
-        console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
-      },
       errorCallback: (err) => {
         console.error("Unexpected error while uploading", err);
       },

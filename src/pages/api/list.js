@@ -1,46 +1,31 @@
-import { S3Client, ListObjectsCommand } from "@aws-sdk/client-s3";
-
-import { AWS_REGION, AWS_STORAGE_PARAMS } from "../../constant/storage";
-import { getLink } from "../../util/backStorage";
-
-// Create an Amazon S3 service client object.
-const s3Client = new S3Client({ region: AWS_REGION });
+import { AWS_MAX_KEYS } from "../../constant/storage";
+import { itemDao } from "../../dao/item";
 
 export default async function handler(req, res) {
-  const Marker = req.query.marker;
+  if (req.method !== "GET") {
+    res.status(400).json("Method not supported!");
+  }
 
-  let list = [];
+  const queryPage = parseInt(req.query.page, 10);
+  const page = Math.max(queryPage ? queryPage : 1, 1);
+
+  let data = [];
   let result;
+  let total = 0;
   try {
-    result = await s3Client.send(
-      new ListObjectsCommand({ ...AWS_STORAGE_PARAMS, Marker })
+    result = await itemDao.listPage();
+    total = result.length;
+    data = await Promise.all(
+      result
+        .splice((page - 1) * AWS_MAX_KEYS, page * AWS_MAX_KEYS)
+        .map((item) => item.id.S.replace("compressed/", ""))
     );
-    if (result && result.Contents) {
-      await Promise.all(
-        result.Contents.map(async (item) => {
-          const id = item.Key.replace("compressed/", "");
-          const name = item.Key.replace(/.*\//, "");
-          const size = (item.Size / 1024).toFixed(2);
-
-          const link = await getLink(s3Client, item.Key);
-          const linkOriginal = await getLink(
-            s3Client,
-            item.Key.replace("compressed/", "original/")
-          );
-
-          list.push({ id, name, link, linkOriginal, size });
-        })
-      );
-    }
   } catch (e) {
     console.debug(e);
   }
   res.status(200).json({
-    data: list,
-    next: result?.IsTruncated
-      ? result?.NextMarker
-        ? result?.NextMarker
-        : result?.Contents?.[result?.Contents?.length - 1].Key
-      : null,
+    data,
+    page,
+    total,
   });
 }

@@ -1,31 +1,38 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { AWS_MAX_KEYS } from "../constant/storage";
+import { fetcher } from "../util/fetcher";
 
 export function useList() {
   const [listCompressed, setListCompressed] = useState([]);
   const [nextPage, setNextPage] = useState();
-  const [marker, setMarker] = useState();
+  const [page, setPage] = useState();
 
-  useMemo(async () => {
-    const response = await fetch(
-      "/api/list" + (marker ? `?marker=${marker}` : "")
-    );
+  useEffect(() => {
+    const getList = async () => {
+      const fetchList = new URL(
+        "/api/list" + (page ? `?page=${page}` : ""),
+        window.location
+      );
 
-    if (response) {
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        const listResult = await response.json();
+      const listResult = await fetcher(fetchList);
+
+      if (listResult) {
+        const total = parseInt(listResult.total, 10);
+        const resultPage = parseInt(listResult.page, 10);
 
         if (!listResult?.data || listResult.data.length === 0) return;
 
+        const listed = AWS_MAX_KEYS * resultPage;
         setListCompressed([...listCompressed, ...listResult.data]);
-        setNextPage(listResult.next);
+        setNextPage(total > listed ? resultPage + 1 : undefined);
       }
-    }
-  }, [marker]);
+    };
+    getList();
+  }, [page]);
 
   const getNextPage = () => {
     if (nextPage) {
-      setMarker(nextPage);
+      setPage(nextPage);
     }
   };
 

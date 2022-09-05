@@ -3,5 +3,3 @@ export const imageCompressorOptions = {
   maxWidthOrHeight: 500,
   useWebWorker: true,
 };
-
-export const LIMIT_MAX_SIZE_MB = 3;

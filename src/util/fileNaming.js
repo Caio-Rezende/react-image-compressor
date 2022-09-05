@@ -9,3 +9,12 @@ export class FileNaming {
     });
   }
 }
+
+export class FileNamingNoPath {
+  constructor(name, attributes = []) {
+    this.name = name;
+    attributes.forEach((attr) => {
+      this[attr] = `public/${attr}/${name}`;
+    });
+  }
+}

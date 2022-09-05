@@ -1,9 +1,14 @@
 // Set the AWS Region.
-export const AWS_REGION = process.env.AWS_REGION; //e.g. ""
+export const AWS_REGION = process.env.AWS_REGION;
+
+export const AWS_MAX_KEYS = parseInt(
+  process.env.NEXT_PUBLIC_AWS_MAX_KEYS ?? 1,
+  10
+);
 
 // Set the parameters
 export const AWS_STORAGE_PARAMS = {
-  Bucket: process.env.AWS_BUCKET_NAME, // The name of the bucket. For example, 'sample_bucket_101'.
+  Bucket: process.env.AWS_BUCKET_NAME,
   Prefix: "public/compressed",
-  MaxKeys: parseInt(process.env.AWS_MAX_KEYS, 10),
+  MaxKeys: AWS_MAX_KEYS,
 };

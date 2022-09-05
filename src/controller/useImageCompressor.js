@@ -1,10 +1,7 @@
 import { useCallback, useState } from "react";
 import imageCompression from "browser-image-compression";
 
-import {
-  imageCompressorOptions,
-  LIMIT_MAX_SIZE_MB,
-} from "../constant/imageCompressor";
+import { imageCompressorOptions } from "../constant/imageCompressor";
 
 import { FileNaming } from "../util/fileNaming";
 import { storageUpload, storageGet } from "../util/frontStorage";
@@ -38,12 +35,6 @@ export function useImageCompressor() {
         alert("Image is too small, can't be Compressed!");
         return 0;
       }
-      if (LIMIT_MAX_SIZE_MB <= originalImage.size / 1024 / 1024) {
-        alert(
-          "Image is too big, won't be available in the storage! Only the compressed one."
-        );
-        maxLimitSizeReached = true;
-      }
 
       //Compress image
       imageCompression(originalImage, imageCompressorOptions).then(
@@ -64,10 +55,12 @@ export function useImageCompressor() {
 
           setCompressedLink(linkStorage);
 
-          if (!maxLimitSizeReached) {
-            //Upload compressed image to storage
-            await storageUpload(fileNaming.original, originalImage);
-          }
+          //Upload compressed image to storage
+          await storageUpload(fileNaming.original, originalImage);
+
+          await fetch(`/api/item?id=${fileNaming.compressed}`, {
+            method: "POST",
+          });
         }
       );
 
