@@ -1,5 +1,5 @@
 // Set the AWS Region.
-export const AWS_REGION = "us-east-1"; //e.g. ""
+export const AWS_REGION = process.env.AWS_REGION; //e.g. ""
 
 // Set the parameters
 export const AWS_STORAGE_PARAMS = {

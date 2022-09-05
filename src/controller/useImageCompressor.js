@@ -6,8 +6,8 @@ import {
   LIMIT_MAX_SIZE_MB,
 } from "../constant/imageCompressor";
 
-import { FileNaming } from "../dao/fileNaming";
-import { storageUpload, storageGet } from "../util/storage";
+import { FileNaming } from "../util/fileNaming";
+import { storageUpload, storageGet } from "../util/frontStorage";
 
 export function useImageCompressor() {
   const [compressedLink, setCompressedLink] = useState();
@@ -56,11 +56,6 @@ export function useImageCompressor() {
             "compressed",
           ]);
 
-          if (!maxLimitSizeReached) {
-            //Upload compressed image to storage
-            await storageUpload(fileNaming.original, originalImage);
-          }
-
           //Upload compressed image to storage
           await storageUpload(fileNaming.compressed, compressedImage);
 
@@ -68,6 +63,11 @@ export function useImageCompressor() {
           const linkStorage = await storageGet(fileNaming.compressed);
 
           setCompressedLink(linkStorage);
+
+          if (!maxLimitSizeReached) {
+            //Upload compressed image to storage
+            await storageUpload(fileNaming.original, originalImage);
+          }
         }
       );
 

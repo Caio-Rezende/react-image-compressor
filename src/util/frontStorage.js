@@ -27,11 +27,3 @@ export async function storageGet(filename) {
     console.debug(e);
   }
 }
-
-export async function storageList() {
-  try {
-    return await Storage.list("", { maxKeys: "ALL" });
-  } catch (e) {
-    console.debug(e);
-  }
-}

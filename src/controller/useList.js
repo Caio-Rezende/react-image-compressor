@@ -1,33 +1,33 @@
 import { useMemo, useState } from "react";
-import { storageGet, storageList } from "../util/storage";
 
 export function useList() {
   const [listCompressed, setListCompressed] = useState([]);
-  const [originals, setOriginals] = useState({});
+  const [nextPage, setNextPage] = useState();
+  const [marker, setMarker] = useState();
 
   useMemo(async () => {
-    storageList().then(async (list) => {
-      if (!list || list.length === 0) return;
-      const listCompressed = [];
-      const originals = {};
-      await Promise.all(
-        list.map(async (item) => {
-          const id = item.key.replace(/(compressed|original)\//, "");
-          const name = item.key.replace(/.*\//, "");
-          const size = (item.size / 1024).toFixed(2);
-          const link = await storageGet(item.key);
-          const obj = { id, name, link, size };
-          if (/compressed/.test(item.key)) {
-            listCompressed.push(obj);
-          } else {
-            originals[id] = obj;
-          }
-        })
-      );
-      setListCompressed(listCompressed);
-      setOriginals(originals);
-    });
-  }, []);
+    const response = await fetch(
+      "/api/list" + (marker ? `?marker=${marker}` : "")
+    );
 
-  return { listCompressed, originals };
+    if (response) {
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const listResult = await response.json();
+
+        if (!listResult?.data || listResult.data.length === 0) return;
+
+        setListCompressed([...listCompressed, ...listResult.data]);
+        setNextPage(listResult.next);
+      }
+    }
+  }, [marker]);
+
+  const getNextPage = () => {
+    if (nextPage) {
+      setMarker(nextPage);
+    }
+  };
+
+  return { listCompressed, nextPage, getNextPage };
 }
